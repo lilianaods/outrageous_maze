@@ -1,3 +1,7 @@
-export default function Square() {
-  return <button className="square">X</button>;
+import { Posts } from "./components/Posts";
+
+function App() {
+  return <Posts />;
 }
+
+export default App;
