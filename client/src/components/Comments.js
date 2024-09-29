@@ -8,6 +8,8 @@ export const Comments = ({ comments }) => {
         message={comment.message}
         user={comment.user}
         createdAt={comment.createdAt}
+        likeCount={comment.likeCount}
+        likedByMe={comment.likedByMe}
       />
     </div>
   ));
