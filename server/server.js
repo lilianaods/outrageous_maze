@@ -102,6 +102,26 @@ app.put("/posts/:postId/comments/:commentId", async (req, res) => {
   );
 });
 
+app.delete("/posts/:postId/comments/:commentId", async (req, res) => {
+  const { userId } = await prisma.comment.findUnique({
+    where: { id: req.params.commentId },
+    select: { userId: true },
+  });
+  if (userId !== req.cookies.userId) {
+    return res.send(
+      app.httpErrors.unauthorized(
+        "You do not have permission to delete this comment"
+      )
+    );
+  }
+  return await commitToDb(
+    prisma.comment.delete({
+      where: { id: req.params.commentId },
+      select: { id: true },
+    })
+  );
+});
+
 app.listen({ port: process.env.PORT });
 
 const commitToDb = async (promise) => {

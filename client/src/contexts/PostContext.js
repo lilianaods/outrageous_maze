@@ -48,6 +48,10 @@ export const PostProvider = ({ children }) => {
     );
   };
 
+  const deleteLocalComment = (id) => {
+    setComments((prev) => prev.filter((comment) => comment.id !== id));
+  };
+
   return (
     <Context.Provider
       value={{
@@ -59,6 +63,7 @@ export const PostProvider = ({ children }) => {
         getReplies,
         createLocalComment,
         updateLocalComment,
+        deleteLocalComment,
       }}
     >
       {loading ? (

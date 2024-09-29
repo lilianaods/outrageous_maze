@@ -2,7 +2,11 @@ import { Fragment, useState } from "react";
 import { FaEdit, FaHeart, FaReply, FaTrash } from "react-icons/fa";
 import { usePost } from "../contexts/PostContext";
 import { useAsyncFn } from "../hooks/useAsync";
-import { createComment, updateComment } from "../services/comments";
+import {
+  createComment,
+  deleteComment,
+  updateComment,
+} from "../services/comments";
 import { CommentForm } from "./CommentForm";
 import { Comments } from "./Comments";
 import { IconBtn } from "./IconBtn";
@@ -16,10 +20,16 @@ export const Comment = ({ id, message, user, createdAt }) => {
   const [areChildrenHidden, setAreChildrenHidden] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const { post, getReplies, createLocalComment, updateLocalComment } =
-    usePost();
+  const {
+    post,
+    getReplies,
+    createLocalComment,
+    updateLocalComment,
+    deleteLocalComment,
+  } = usePost();
   const createCommentFn = useAsyncFn(createComment);
   const updateCommentFn = useAsyncFn(updateComment);
+  const deleteCommentFn = useAsyncFn(deleteComment);
   const childComments = getReplies(id);
   const onCommentReply = (message) =>
     createCommentFn
@@ -36,6 +46,11 @@ export const Comment = ({ id, message, user, createdAt }) => {
         setIsEditing(false);
         updateLocalComment(id, comment.message);
       })
+      .catch(() => {});
+  const onCommentDelete = () =>
+    deleteCommentFn
+      .execute(post.id, id)
+      .then((comment) => deleteLocalComment(comment.id))
       .catch(() => {});
   return (
     <>
@@ -73,7 +88,13 @@ export const Comment = ({ id, message, user, createdAt }) => {
             icon={FaEdit}
             aria-label={isEditing ? "Cancel edit" : "Edit"}
           />
-          <IconBtn icon={FaTrash} aria-label="Delete" color="danger" />
+          <IconBtn
+            disabled={deleteCommentFn.loading}
+            onClick={onCommentDelete}
+            icon={FaTrash}
+            aria-label="Delete"
+            color="danger"
+          />
         </div>
       </div>
       {isReplying && (

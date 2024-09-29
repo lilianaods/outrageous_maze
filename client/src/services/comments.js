@@ -13,3 +13,9 @@ export function updateComment(postId, commentId, message) {
     data: { message },
   });
 }
+
+export function deleteComment(postId, commentId) {
+  return makeRequest(`/posts/${postId}/comments/${commentId}`, {
+    method: "DELETE",
+  });
+}
