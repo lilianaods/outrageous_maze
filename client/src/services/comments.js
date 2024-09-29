@@ -6,3 +6,10 @@ export function createComment(postId, message, parentId) {
     data: { message, parentId },
   });
 }
+
+export function updateComment(postId, commentId, message) {
+  return makeRequest(`/posts/${postId}/comments/${commentId}`, {
+    method: "PUT",
+    data: { message },
+  });
+}
