@@ -25,6 +25,18 @@ const prisma = new PrismaClient();
 const CURRENT_USER_ID = (
   await prisma.user.findFirst({ where: { name: "Kyle" } })
 ).id;
+const COMMENT_SELECT_FIELDS = {
+  id: true,
+  message: true,
+  parentId: true,
+  createdAt: true,
+  user: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+};
 
 app.get("/posts", async (req, res) => {
   return await commitToDb(
@@ -41,18 +53,7 @@ app.get("/posts/:id", async (req, res) => {
         body: true,
         comments: {
           orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            message: true,
-            parentId: true,
-            createdAt: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
+          select: COMMENT_SELECT_FIELDS,
         },
       },
     })
@@ -72,6 +73,7 @@ app.post("/posts/:id/comments", async (req, res) => {
         parentId: req.body.parentId,
         postId: req.params.id,
       },
+      select: COMMENT_SELECT_FIELDS,
     })
   );
 });
