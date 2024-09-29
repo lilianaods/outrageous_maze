@@ -2,6 +2,7 @@ import { Fragment, useState } from "react";
 import { FaEdit, FaHeart, FaReply, FaTrash } from "react-icons/fa";
 import { usePost } from "../contexts/PostContext";
 import { useAsyncFn } from "../hooks/useAsync";
+import { useUser } from "../hooks/useUser";
 import {
   createComment,
   deleteComment,
@@ -30,6 +31,7 @@ export const Comment = ({ id, message, user, createdAt }) => {
   const createCommentFn = useAsyncFn(createComment);
   const updateCommentFn = useAsyncFn(updateComment);
   const deleteCommentFn = useAsyncFn(deleteComment);
+  const currentUser = useUser();
   const childComments = getReplies(id);
   const onCommentReply = (message) =>
     createCommentFn
@@ -82,20 +84,27 @@ export const Comment = ({ id, message, user, createdAt }) => {
             icon={FaReply}
             aria-label={isReplying ? "Cancel reply" : "Reply"}
           />
-          <IconBtn
-            onClick={() => setIsEditing((prev) => !prev)}
-            isActive={isEditing}
-            icon={FaEdit}
-            aria-label={isEditing ? "Cancel edit" : "Edit"}
-          />
-          <IconBtn
-            disabled={deleteCommentFn.loading}
-            onClick={onCommentDelete}
-            icon={FaTrash}
-            aria-label="Delete"
-            color="danger"
-          />
+          {user.id === currentUser.id && (
+            <>
+              <IconBtn
+                onClick={() => setIsEditing((prev) => !prev)}
+                isActive={isEditing}
+                icon={FaEdit}
+                aria-label={isEditing ? "Cancel edit" : "Edit"}
+              />
+              <IconBtn
+                disabled={deleteCommentFn.loading}
+                onClick={onCommentDelete}
+                icon={FaTrash}
+                aria-label="Delete"
+                color="danger"
+              />
+            </>
+          )}
         </div>
+        {deleteCommentFn.error && (
+          <div className="error-msg mt-1">{deleteCommentFn.error}</div>
+        )}
       </div>
       {isReplying && (
         <div className="mt-1 ml-3">
