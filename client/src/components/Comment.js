@@ -1,8 +1,11 @@
-import { FaHeart, FaReply, FaEdit, FaTrash } from "react-icons/fa";
-import { IconBtn } from "./IconBtn";
-import { usePost } from "../contexts/PostContext";
 import { Fragment, useState } from "react";
+import { FaEdit, FaHeart, FaReply, FaTrash } from "react-icons/fa";
+import { usePost } from "../contexts/PostContext";
+import { useAsyncFn } from "../hooks/useAsync";
+import { createComment } from "../services/comments";
+import { CommentForm } from "./CommentForm";
 import { Comments } from "./Comments";
+import { IconBtn } from "./IconBtn";
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
@@ -11,8 +14,18 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 
 export const Comment = ({ id, message, user, createdAt }) => {
   const [areChildrenHidden, setAreChildrenHidden] = useState(false);
-  const { getReplies } = usePost();
+  const [isReplying, setIsReplying] = useState(false);
+  const { post, getReplies, createLocalComment } = usePost();
+  const createCommentFn = useAsyncFn(createComment);
   const childComments = getReplies(id);
+  const onCommentReply = (message) =>
+    createCommentFn
+      .execute(post.id, message, id)
+      .then((comment) => {
+        setIsReplying(false);
+        createLocalComment(comment);
+      })
+      .catch(() => {});
   return (
     <>
       <div className="comment">
@@ -27,11 +40,27 @@ export const Comment = ({ id, message, user, createdAt }) => {
           <IconBtn icon={FaHeart} aria-label="Like">
             2
           </IconBtn>
-          <IconBtn icon={FaReply} aria-label="Reply" />
+          <IconBtn
+            onClick={() => setIsReplying((prev) => !prev)}
+            isActive={isReplying}
+            icon={FaReply}
+            aria-label={isReplying ? "Cancel reply" : "Reply"}
+          />
           <IconBtn icon={FaEdit} aria-label="Edit" />
           <IconBtn icon={FaTrash} aria-label="Delete" color="danger" />
         </div>
       </div>
+      {isReplying && (
+        <div className="mt-1 ml-3">
+          <CommentForm
+            parentId={id}
+            autoFocus
+            onSubmit={onCommentReply}
+            loading={createCommentFn.loading}
+            error={createCommentFn.error}
+          />
+        </div>
+      )}
       {childComments.length > 0 && (
         <Fragment>
           <div
